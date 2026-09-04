@@ -6,7 +6,8 @@ import { environment } from '../environments/environment';
 
 export interface LaundryService { id: number; name: string; pricePerKg: number; }
 export interface CartItem extends LaundryService { quantity: number; }
-export interface Order { id: number; customerName: string; customerPhone: string; totalAmount: number; orderDate: string; status: string; items: any[]; }
+export interface OrderItem { id: number; name: string; pricePerKg: number; quantity: number; orderId: number; }
+export interface Order { id: number; customerName: string; customerPhone: string; totalAmount: number; orderDate: string; status: string; items: OrderItem[]; }
 
 @Component({
   selector: 'app-root',
@@ -155,7 +156,7 @@ export class AppComponent implements OnInit {
         <hr style="border-top: 1px dashed black;">
         <table style="width: 100%; text-align: left; font-size: 14px; margin-bottom: 10px;">
           <tr><th style="padding-bottom: 5px;">Item</th><th style="padding-bottom: 5px;">Qty</th></tr>
-          ${order.items.map((i: any) => `<tr><td style="padding-bottom: 5px;">${escapeHtml(i.name)}</td><td style="padding-bottom: 5px;">${i.quantity}kg</td></tr>`).join('')}
+          ${order.items.map((i: OrderItem) => `<tr><td style="padding-bottom: 5px;">${escapeHtml(i.name)}</td><td style="padding-bottom: 5px;">${i.quantity}kg</td></tr>`).join('')}
         </table>
         <hr style="border-top: 1px dashed black;">
         <h3 style="text-align: right; margin: 10px 0;">TOTAL: ₹${order.totalAmount.toFixed(2)}</h3>

@@ -1,122 +1,105 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowPOS", policy => 
+// 1. SETUP AUTHENTICATION (JWT)
+var jwtSecret = builder.Configuration["Security:JwtSecret"]!;
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
     {
-        policy.WithOrigins("http://localhost:4200").AllowAnyMethod().AllowAnyHeader();
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
+            ValidateIssuer = false,
+            ValidateAudience = false
+        };
     });
-});
+builder.Services.AddAuthorization();
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
-    ?? "Server=sqlserver;Database=LaundryDb;User Id=sa;Password=NelloreLaundry@123;TrustServerCertificate=True;";
+builder.Services.AddCors(options =>
+    options.AddPolicy("AllowPOS", policy => 
+        policy.WithOrigins("http://localhost:4200").AllowAnyMethod().AllowAnyHeader()));
 
-// Tell C# to use SQL Server, and automatically retry if the database is asleep
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AppDbContext>(options => 
-    options.UseSqlServer(connectionString, sqlOptions => 
-    {
-        sqlOptions.EnableRetryOnFailure(
-            maxRetryCount: 5, // Try 5 times
-            maxRetryDelay: TimeSpan.FromSeconds(5), // Wait 5 seconds between tries
-            errorNumbersToAdd: null);
-    }));
+    options.UseSqlServer(connectionString, sqlOptions => sqlOptions.EnableRetryOnFailure(5, TimeSpan.FromSeconds(5), null)));
+
 var app = builder.Build();
 
-// Auto-create database and seed default services if empty
+// 2. EF CORE MIGRATIONS (Replaces EnsureCreated)
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.EnsureCreated();
+    db.Database.Migrate(); // Applies actual migrations instead of blind table creation
     
     if (!db.Services.Any())
     {
         db.Services.AddRange(
-            new LaundryService { Name = "Wash & Fold", PricePerKg = 50 },
+            new LaundryService { Name = "Wash & Fold", PricePerKg = 60 },
             new LaundryService { Name = "Wash & Iron", PricePerKg = 80 },
-            new LaundryService { Name = "Dry Cleaning", PricePerKg = 150 }
+            new LaundryService { Name = "Dry Cleaning", PricePerKg = 110 }
         );
         db.SaveChanges();
     }
 }
 
 app.UseCors("AllowPOS");
-app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
 
-// --- DYNAMIC CATALOG ENDPOINTS ---
-app.MapGet("/api/services", async (AppDbContext db) => await db.Services.ToListAsync());
-
-app.MapPost("/api/services", async (LaundryService newService, AppDbContext db) =>
+// 3. SECURE AUTH ENDPOINT
+app.MapPost("/api/auth/login", (LoginRequest req, IConfiguration config) =>
 {
-    db.Services.Add(newService);
-    await db.SaveChangesAsync();
-    return Results.Ok(newService);
-});
-
-app.MapPut("/api/services/{id}", async (int id, LaundryService updatedService, AppDbContext db) =>
-{
-    var service = await db.Services.FindAsync(id);
-    if (service == null) return Results.NotFound();
+    if (req.Pin != config["Security:AdminPin"]) return Results.Unauthorized();
     
-    service.Name = updatedService.Name;
-    service.PricePerKg = updatedService.PricePerKg;
-    await db.SaveChangesAsync();
-    return Results.Ok(service);
-});
-
-app.MapDelete("/api/services/{id}", async (int id, AppDbContext db) =>
-{
-    var service = await db.Services.FindAsync(id);
-    if (service == null) return Results.NotFound();
+    var tokenDescriptor = new SecurityTokenDescriptor
+    {
+        Subject = new ClaimsIdentity(new[] { new Claim(ClaimTypes.Role, "Admin") }),
+        Expires = DateTime.UtcNow.AddHours(12),
+        SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)), SecurityAlgorithms.HmacSha256Signature)
+    };
     
-    db.Services.Remove(service);
-    await db.SaveChangesAsync();
-    return Results.Ok();
+    var tokenHandler = new JwtSecurityTokenHandler();
+    var token = tokenHandler.CreateToken(tokenDescriptor);
+    return Results.Ok(new { token = tokenHandler.WriteToken(token) });
 });
 
-// --- ORDER ENDPOINTS ---
-app.MapGet("/api/orders", async (AppDbContext db) =>
-    await db.Orders.Include(o => o.Items).OrderByDescending(o => o.OrderDate).ToListAsync());
+// 4. SECURED BUSINESS ENDPOINTS (Notice .RequireAuthorization())
+app.MapGet("/api/services", async (AppDbContext db) => await db.Services.ToListAsync()).RequireAuthorization();
+app.MapPost("/api/services", async (LaundryService newService, AppDbContext db) => { db.Services.Add(newService); await db.SaveChangesAsync(); return Results.Ok(newService); }).RequireAuthorization();
+app.MapPut("/api/services/{id}", async (int id, LaundryService updatedService, AppDbContext db) => { var s = await db.Services.FindAsync(id); if (s == null) return Results.NotFound(); s.Name = updatedService.Name; s.PricePerKg = updatedService.PricePerKg; await db.SaveChangesAsync(); return Results.Ok(s); }).RequireAuthorization();
+app.MapDelete("/api/services/{id}", async (int id, AppDbContext db) => { var s = await db.Services.FindAsync(id); if (s == null) return Results.NotFound(); db.Services.Remove(s); await db.SaveChangesAsync(); return Results.Ok(); }).RequireAuthorization();
 
+app.MapGet("/api/orders", async (AppDbContext db) => await db.Orders.Include(o => o.Items).OrderByDescending(o => o.OrderDate).ToListAsync()).RequireAuthorization();
+app.MapPut("/api/orders/{id}/status", async (int id, StatusUpdate req, AppDbContext db) => { var order = await db.Orders.FindAsync(id); if (order == null) return Results.NotFound(); order.Status = req.Status; await db.SaveChangesAsync(); return Results.Ok(); }).RequireAuthorization();
+
+// ZERO-TRUST ORDER CREATION
 app.MapPost("/api/orders", async (OrderRequest incomingOrder, AppDbContext db) =>
 {
-    var newOrder = new Order 
+    if (string.IsNullOrWhiteSpace(incomingOrder.CustomerName) || string.IsNullOrWhiteSpace(incomingOrder.CustomerPhone)) return Results.BadRequest(new { message = "Customer details required." });
+    var serviceIds = incomingOrder.Items.Select(i => i.ServiceId).ToList();
+    var officialServices = await db.Services.Where(s => serviceIds.Contains(s.Id)).ToDictionaryAsync(s => s.Id);
+
+    var newOrder = new Order { CustomerName = incomingOrder.CustomerName, CustomerPhone = incomingOrder.CustomerPhone, TotalAmount = 0 };
+    foreach (var itemReq in incomingOrder.Items)
     {
-        CustomerName = incomingOrder.CustomerName,
-        CustomerPhone = incomingOrder.CustomerPhone,
-        TotalAmount = incomingOrder.TotalAmount,
-        Items = incomingOrder.Items.Select(i => new OrderItem 
-        {
-            Name = i.Name, PricePerKg = i.PricePerKg, Quantity = i.Quantity
-        }).ToList()
-    };
-    db.Orders.Add(newOrder);
-    await db.SaveChangesAsync();
-    return new { message = "Order successfully saved to SQL Server!" };
-});
-
-app.MapPut("/api/orders/{id}/status", async (int id, StatusUpdate req, AppDbContext db) =>
-{
-    var order = await db.Orders.FindAsync(id);
-    if (order == null) return Results.NotFound();
-    order.Status = req.Status;
-    await db.SaveChangesAsync();
-    return Results.Ok();
-});
-
-// --- AUTHENTICATION ---
-app.MapPost("/api/auth/login", (LoginRequest req) =>
-{
-    if (req.Pin == "1234") return Results.Ok(new { message = "Authorized" });
-    return Results.Unauthorized();
-});
+        if (!officialServices.TryGetValue(itemReq.ServiceId, out var svc)) return Results.BadRequest(new { message = "Invalid Service ID" });
+        newOrder.Items.Add(new OrderItem { Name = svc.Name, PricePerKg = svc.PricePerKg, Quantity = itemReq.Quantity });
+        newOrder.TotalAmount += (svc.PricePerKg * itemReq.Quantity);
+    }
+    db.Orders.Add(newOrder); await db.SaveChangesAsync();
+    return Results.Ok(new { message = "Order successfully saved." });
+}).RequireAuthorization();
 
 app.Run();
 
-// --- DATA SHAPES ---
 public record StatusUpdate(string Status);
-public record OrderItemDto(int Id, string Name, decimal PricePerKg, decimal Quantity);
-public record OrderRequest(string CustomerName, string CustomerPhone, decimal TotalAmount, OrderItemDto[] Items);
 public record LoginRequest(string Pin);
+public record OrderItemRequest(int ServiceId, decimal Quantity);
+public record OrderRequest(string CustomerName, string CustomerPhone, OrderItemRequest[] Items);

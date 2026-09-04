@@ -7,48 +7,79 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowPOS", policy => 
     {
-        policy.WithOrigins("http://localhost:4200")
-              .AllowAnyMethod()
-              .AllowAnyHeader();
+        policy.WithOrigins("http://localhost:4200").AllowAnyMethod().AllowAnyHeader();
     });
 });
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
     ?? "Server=sqlserver;Database=LaundryDb;User Id=sa;Password=NelloreLaundry@123;TrustServerCertificate=True;";
 
+// Tell C# to use SQL Server, and automatically retry if the database is asleep
 builder.Services.AddDbContext<AppDbContext>(options => 
-    options.UseSqlServer(connectionString));
-
+    options.UseSqlServer(connectionString, sqlOptions => 
+    {
+        sqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 5, // Try 5 times
+            maxRetryDelay: TimeSpan.FromSeconds(5), // Wait 5 seconds between tries
+            errorNumbersToAdd: null);
+    }));
 var app = builder.Build();
 
+// Auto-create database and seed default services if empty
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.EnsureCreated();       
+    db.Database.EnsureCreated();
+    
+    if (!db.Services.Any())
+    {
+        db.Services.AddRange(
+            new LaundryService { Name = "Wash & Fold", PricePerKg = 50 },
+            new LaundryService { Name = "Wash & Iron", PricePerKg = 80 },
+            new LaundryService { Name = "Dry Cleaning", PricePerKg = 150 }
+        );
+        db.SaveChanges();
+    }
 }
 
 app.UseCors("AllowPOS");
 app.UseHttpsRedirection();
 
-// --- POS MENU ---
-app.MapGet("/api/services", () =>
+// --- DYNAMIC CATALOG ENDPOINTS ---
+app.MapGet("/api/services", async (AppDbContext db) => await db.Services.ToListAsync());
+
+app.MapPost("/api/services", async (LaundryService newService, AppDbContext db) =>
 {
-    return new object[]
-    {
-        new { Id = 1, Name = "Wash & Fold", PricePerKg = 50 },
-        new { Id = 2, Name = "Wash & Iron", PricePerKg = 80 },
-        new { Id = 3, Name = "Dry Cleaning", PricePerKg = 150 }
-    };
+    db.Services.Add(newService);
+    await db.SaveChangesAsync();
+    return Results.Ok(newService);
 });
 
-// --- NEW: FETCH ORDER HISTORY ---
+app.MapPut("/api/services/{id}", async (int id, LaundryService updatedService, AppDbContext db) =>
+{
+    var service = await db.Services.FindAsync(id);
+    if (service == null) return Results.NotFound();
+    
+    service.Name = updatedService.Name;
+    service.PricePerKg = updatedService.PricePerKg;
+    await db.SaveChangesAsync();
+    return Results.Ok(service);
+});
+
+app.MapDelete("/api/services/{id}", async (int id, AppDbContext db) =>
+{
+    var service = await db.Services.FindAsync(id);
+    if (service == null) return Results.NotFound();
+    
+    db.Services.Remove(service);
+    await db.SaveChangesAsync();
+    return Results.Ok();
+});
+
+// --- ORDER ENDPOINTS ---
 app.MapGet("/api/orders", async (AppDbContext db) =>
-{
-    // Retrieves all orders, includes their specific laundry items, and sorts by newest first
-    return await db.Orders.Include(o => o.Items).OrderByDescending(o => o.OrderDate).ToListAsync();
-});
+    await db.Orders.Include(o => o.Items).OrderByDescending(o => o.OrderDate).ToListAsync());
 
-// --- SUBMIT NEW ORDER ---
 app.MapPost("/api/orders", async (OrderRequest incomingOrder, AppDbContext db) =>
 {
     var newOrder = new Order 
@@ -58,34 +89,26 @@ app.MapPost("/api/orders", async (OrderRequest incomingOrder, AppDbContext db) =
         TotalAmount = incomingOrder.TotalAmount,
         Items = incomingOrder.Items.Select(i => new OrderItem 
         {
-            Name = i.Name,
-            PricePerKg = i.PricePerKg,
-            Quantity = i.Quantity
+            Name = i.Name, PricePerKg = i.PricePerKg, Quantity = i.Quantity
         }).ToList()
     };
-    
     db.Orders.Add(newOrder);
     await db.SaveChangesAsync();
-    
-    Console.WriteLine($"\n✅ SAVED TO SQL SERVER: {newOrder.CustomerName} - Rs. {newOrder.TotalAmount}");
     return new { message = "Order successfully saved to SQL Server!" };
 });
 
-// --- UPDATE ORDER STATUS ---
 app.MapPut("/api/orders/{id}/status", async (int id, StatusUpdate req, AppDbContext db) =>
 {
     var order = await db.Orders.FindAsync(id);
     if (order == null) return Results.NotFound();
-    
     order.Status = req.Status;
     await db.SaveChangesAsync();
-    
-    return Results.Ok(new { message = $"Order {id} status updated to {req.Status}" });
+    return Results.Ok();
 });
 
 app.Run();
 
 // --- DATA SHAPES ---
+public record StatusUpdate(string Status);
 public record OrderItemDto(int Id, string Name, decimal PricePerKg, decimal Quantity);
 public record OrderRequest(string CustomerName, string CustomerPhone, decimal TotalAmount, OrderItemDto[] Items);
-public record StatusUpdate(string Status);

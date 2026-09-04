@@ -1,317 +1,361 @@
 @if (isAuthenticated) {
-  <div class="max-w-7xl mx-auto p-6 font-sans text-gray-800">
+  <div class="flex h-screen bg-slate-100 font-sans text-slate-800 overflow-hidden">
     
-    <!-- NAVIGATION -->
-    <div class="flex flex-col md:flex-row justify-between items-center mb-8 border-b pb-4">
-      <h1 class="text-3xl font-extrabold tracking-tight text-gray-900 mb-4 md:mb-0">Nellore Laundry POS</h1>
-      <div class="flex gap-3">
-        <button 
-          (click)="switchTab('pos')" 
-          [class]="activeTab === 'pos' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'"
-          class="px-5 py-2 rounded-lg font-semibold shadow-sm transition-colors duration-200">
-          New Order
+    <!-- SAAS SIDEBAR -->
+    <aside class="w-64 bg-slate-900 text-white flex flex-col shadow-2xl z-20 shrink-0">
+      <div class="p-6 border-b border-slate-800 flex items-center gap-4">
+        <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-2xl shadow-lg shadow-blue-600/40">
+          🧺
+        </div>
+        <div>
+          <h1 class="text-xl font-black tracking-wider leading-tight">NELLORE</h1>
+          <p class="text-blue-400 text-xs font-bold tracking-widest uppercase">Laundry POS</p>
+        </div>
+      </div>
+      
+      <nav class="flex-1 px-4 py-8 space-y-2">
+        <button (click)="switchTab('pos')" [class]="activeTab === 'pos' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:bg-slate-800 hover:text-white'" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold transition-all duration-200">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+          Register
         </button>
-        <button 
-          (click)="switchTab('dashboard')" 
-          [class]="activeTab === 'dashboard' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'"
-          class="px-5 py-2 rounded-lg font-semibold shadow-sm transition-colors duration-200">
+        <button (click)="switchTab('dashboard')" [class]="activeTab === 'dashboard' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:bg-slate-800 hover:text-white'" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold transition-all duration-200">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
           Dashboard
         </button>
-        <button 
-          (click)="switchTab('settings')" 
-          [class]="activeTab === 'settings' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'"
-          class="px-5 py-2 rounded-lg font-semibold shadow-sm transition-colors duration-200">
-          ⚙️ Settings
+        <button (click)="switchTab('settings')" [class]="activeTab === 'settings' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:bg-slate-800 hover:text-white'" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold transition-all duration-200">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+          Settings
         </button>
-        <button 
-          (click)="logout()" 
-          class="bg-red-50 text-red-600 hover:bg-red-100 px-5 py-2 rounded-lg font-semibold shadow-sm transition-colors duration-200 ml-4 border border-red-200">
-          🔒 Lock
+      </nav>
+
+      <div class="p-4 border-t border-slate-800">
+        <button (click)="logout()" class="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-red-500 text-slate-300 hover:text-white py-3 rounded-xl font-bold transition-colors duration-200">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+          Lock Terminal
         </button>
       </div>
-    </div>
+    </aside>
 
-    <!-- TAB 1: POINT OF SALE -->
-    @if (activeTab === 'pos') {
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- MAIN APP AREA -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden">
+      
+      <!-- TOP HEADER -->
+      <header class="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0 z-10 shadow-sm">
+        <h2 class="text-2xl font-black text-slate-800 capitalize tracking-tight">{{ activeTab === 'pos' ? 'New Order' : activeTab }}</h2>
+        <div class="flex items-center gap-4">
+          <div class="text-right hidden sm:block">
+            <p class="text-sm font-extrabold text-slate-800">Admin User</p>
+            <p class="text-xs text-emerald-500 font-bold">Online</p>
+          </div>
+          <div class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 font-black border-2 border-slate-200">
+            A
+          </div>
+        </div>
+      </header>
+
+      <!-- SCROLLABLE CONTENT -->
+      <div class="flex-1 overflow-y-auto p-6 lg:p-8">
         
-        <!-- LEFT SIDE: MENU -->
-        <div class="lg:col-span-2">
-          <h2 class="text-xl font-bold text-gray-700 mb-6">Select Service</h2>
-          <div class="grid grid-cols-2 sm:grid-cols-3 gap-6">
-            @for (service of services; track service.id) {
-              <div class="bg-white border-2 border-blue-100 hover:border-blue-500 rounded-xl p-6 text-center shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between">
-                <div>
-                  <h3 class="text-lg font-semibold text-gray-800 mb-2">{{ service.name }}</h3>
-                  <p class="text-2xl font-bold text-green-600 mb-6">₹{{ service.pricePerKg }} <span class="text-sm font-medium text-gray-500">/ kg</span></p>
-                </div>
-                <button 
-                  (click)="addToCart(service)"
-                  class="w-full bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white border border-blue-200 hover:border-transparent py-2 px-4 rounded-lg font-semibold transition-colors duration-200">
-                  Add to Order
-                </button>
-              </div>
-            }
-          </div>
-        </div>
-
-        <!-- RIGHT SIDE: CART -->
-        <div class="bg-gray-50 border border-gray-200 rounded-2xl p-6 shadow-inner h-fit">
-          <h2 class="text-xl font-bold text-gray-700 mb-6">Current Order</h2>
-
-          @if (cart.length === 0) {
-            <div class="text-center py-10 text-gray-400">
-              <p>Cart is empty.</p>
-              <p class="text-sm">Select a service to begin.</p>
-            </div>
-          }
-
-          <div class="divide-y divide-gray-200">
-            @for (item of cart; track item.id; let i = $index) {
-              <div class="py-4 flex justify-between items-center">
-                <div class="flex-1">
-                  <strong class="block text-gray-800">{{ item.name }}</strong>
-                  <span class="text-sm text-gray-500">₹{{ item.pricePerKg }}/kg</span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <input 
-                    type="number" 
-                    [(ngModel)]="item.quantity" 
-                    step="0.1" 
-                    min="0.1"
-                    class="w-16 p-1.5 text-center border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                  <span class="text-gray-500 font-medium">kg</span>
-                </div>
-                <div class="w-24 text-right">
-                  <strong class="text-gray-800">₹{{ (item.pricePerKg * item.quantity) | number:'1.2-2' }}</strong>
-                </div>
-                <button 
-                  (click)="removeItem(i)" 
-                  class="ml-4 text-red-400 hover:text-red-600 p-1 rounded-full hover:bg-red-50 transition-colors">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                </button>
-              </div>
-            }
-          </div>
-
-          @if (cart.length > 0) {
-            <div class="mt-8 pt-6 border-t-2 border-gray-200">
-              <h3 class="text-sm uppercase tracking-wider font-bold text-gray-500 mb-4">Customer Details</h3>
-              <input 
-                type="text" 
-                [(ngModel)]="customerName" 
-                placeholder="Customer Name" 
-                class="w-full px-4 py-3 mb-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
-              <input 
-                type="tel" 
-                [(ngModel)]="customerPhone" 
-                placeholder="Phone Number (e.g., 9876543210)" 
-                class="w-full px-4 py-3 mb-6 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
-
-              <div class="flex justify-between items-end mb-6">
-                <span class="text-gray-500 font-bold uppercase tracking-wider">Total Due</span>
-                <h2 class="text-3xl font-black text-gray-900">₹{{ cartTotal | number:'1.2-2' }}</h2>
-              </div>
-              
-              <button 
-                (click)="processOrder()"
-                [disabled]="!customerPhone"
-                class="w-full bg-green-500 text-white py-4 rounded-xl text-lg font-bold shadow-md hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200">
-                Process Order
-              </button>
-            </div>
-          }
-        </div>
-      </div>
-    }
-
-    <!-- TAB 2: DASHBOARD (ORDER HISTORY) -->
-    @if (activeTab === 'dashboard') {
-      <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mt-6">
-        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-          <h2 class="text-lg font-bold text-gray-800">Recent Orders</h2>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
-                <th class="px-6 py-4 font-semibold">Date</th>
-                <th class="px-6 py-4 font-semibold">Customer</th>
-                <th class="px-6 py-4 font-semibold">Phone</th>
-                <th class="px-6 py-4 font-semibold">Items</th>
-                <th class="px-6 py-4 font-semibold">Status</th>
-                <th class="px-6 py-4 font-semibold text-center">Action</th>
-                <th class="px-6 py-4 font-semibold text-right">Total Amount</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100 text-sm">
-              @if (orderHistory.length === 0) {
-                <tr><td colspan="7" class="px-6 py-12 text-center text-gray-500">No orders found.</td></tr>
-              }
-              @for (order of orderHistory; track order.id) {
-                <tr class="hover:bg-gray-50 transition-colors duration-150">
-                  <td class="px-6 py-4 text-gray-500 whitespace-nowrap">{{ order.orderDate | date:'short' }}</td>
-                  <td class="px-6 py-4 font-bold text-gray-900">{{ order.customerName }}</td>
-                  <td class="px-6 py-4 text-gray-600">{{ order.customerPhone }}</td>
-                  <td class="px-6 py-4">
-                    <ul class="list-disc list-inside text-gray-500 space-y-1">
-                      @for (item of order.items; track item.id) {
-                        <li>{{ item.name }} ({{ item.quantity }}kg)</li>
-                      }
-                    </ul>
-                  </td>
-                  <td class="px-6 py-4">
-                    <select 
-                      [value]="order.status || 'Received'" 
-                      (change)="updateStatus(order, $event)"
-                      [ngClass]="{
-                        'text-green-700 bg-green-50 border-green-200': order.status === 'Completed',
-                        'text-blue-700 bg-blue-50 border-blue-200': order.status === 'Ready',
-                        'text-yellow-700 bg-yellow-50 border-yellow-200': order.status === 'Processing',
-                        'text-gray-700 bg-gray-50 border-gray-200': order.status === 'Received' || !order.status
-                      }"
-                      class="pl-3 pr-8 py-1.5 border rounded-lg text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none cursor-pointer">
-                      <option value="Received">Received</option>
-                      <option value="Processing">Processing</option>
-                      <option value="Ready">Ready for Pickup</option>
-                      <option value="Completed">Completed</option>
-                    </select>
-                  </td>
-                  <td class="px-6 py-4 text-center whitespace-nowrap">
-                    <button 
-                      (click)="printReceipt(order)"
-                      class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1.5 rounded-md text-sm font-medium mr-2 transition-colors shadow-sm">
-                      🖨️ Print
-                    </button>
-                    @if (order.status === 'Ready') {
-                      <a 
-                        [href]="'https://wa.me/91' + order.customerPhone + '?text=Hello ' + order.customerName + ', your laundry order is ready for pickup! Total due: ₹' + order.totalAmount" 
-                        target="_blank"
-                        class="bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded-md text-sm font-medium inline-block transition-colors shadow-sm decoration-transparent">
-                        💬 Notify
-                      </a>
-                    }
-                  </td>
-                  <td class="px-6 py-4 font-black text-green-600 text-right text-base">₹{{ order.totalAmount | number:'1.2-2' }}</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      </div>
-    }
-
-    <!-- TAB 3: SETTINGS (CATALOG MANAGEMENT) -->
-    @if (activeTab === 'settings') {
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-6">
-        
-        <!-- ADD NEW SERVICE FORM -->
-        <div class="bg-white border border-gray-200 p-6 rounded-2xl shadow-sm h-fit">
-          <h3 class="text-lg font-bold text-gray-800 mb-6">Add New Service</h3>
-          <div class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Service Name</label>
-              <input 
-                type="text" 
-                [(ngModel)]="newServiceName" 
-                placeholder="e.g., Starching" 
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Price per Kg (₹)</label>
-              <input 
-                type="number" 
-                [(ngModel)]="newServicePrice" 
-                placeholder="0.00" 
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
-            </div>
-            <button 
-              (click)="addService()"
-              [disabled]="!newServiceName || !newServicePrice"
-              class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold shadow-sm hover:bg-blue-700 disabled:opacity-50 transition-colors mt-2">
-              + Add Service
-            </button>
-          </div>
-        </div>
-
-        <!-- MANAGE EXISTING SERVICES -->
-        <div class="lg:col-span-2 bg-white shadow-sm rounded-2xl overflow-hidden border border-gray-200">
-          <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-            <h3 class="text-lg font-bold text-gray-800">Manage Current Catalog</h3>
-          </div>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-              <thead>
-                <tr class="bg-white text-gray-500 text-xs uppercase tracking-wider border-b border-gray-200">
-                  <th class="px-6 py-4 font-semibold">Service Name</th>
-                  <th class="px-6 py-4 font-semibold">Price / Kg (₹)</th>
-                  <th class="px-6 py-4 font-semibold text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-gray-100 text-sm">
+        <!-- TAB 1: POINT OF SALE -->
+        @if (activeTab === 'pos') {
+          <div class="flex flex-col xl:flex-row gap-8 h-full">
+            
+            <!-- LEFT: PREMIUM SERVICE GRID -->
+            <div class="flex-1">
+              <h3 class="text-xs uppercase tracking-[0.2em] font-bold text-slate-400 mb-6 ml-2">Available Services</h3>
+              <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
                 @for (service of services; track service.id) {
-                  <tr class="hover:bg-gray-50 transition-colors duration-150">
-                    <td class="px-6 py-4">
-                      <input type="text" [(ngModel)]="service.name" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
-                    </td>
-                    <td class="px-6 py-4">
-                      <div class="relative">
-                        <span class="absolute left-3 top-2.5 text-gray-500 font-medium">₹</span>
-                        <input type="number" [(ngModel)]="service.pricePerKg" class="w-24 pl-7 pr-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
-                      </div>
-                    </td>
-                    <td class="px-6 py-4 text-right whitespace-nowrap">
-                      <button (click)="updateService(service)" class="bg-yellow-400 hover:bg-yellow-500 text-yellow-900 px-4 py-2 rounded-md font-bold shadow-sm mr-2 transition-colors">
-                        Save
-                      </button>
-                      <button (click)="deleteService(service.id)" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md font-bold shadow-sm transition-colors">
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
+                  <div (click)="addToCart(service)" class="group cursor-pointer bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:border-blue-400 hover:-translate-y-1 transition-all duration-300 relative overflow-hidden flex flex-col items-center text-center h-52 justify-center">
+                    <!-- Decorative Background Blob -->
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-50 to-transparent rounded-bl-full -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    
+                    <div class="w-16 h-16 bg-slate-50 group-hover:bg-blue-100 group-hover:text-blue-600 rounded-2xl flex items-center justify-center text-3xl mb-4 shadow-inner transition-colors duration-300">
+                      ✨
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-1">{{ service.name }}</h3>
+                    <p class="text-2xl font-black text-blue-600">₹{{ service.pricePerKg }}<span class="text-xs font-bold text-slate-400 uppercase ml-1">/kg</span></p>
+                  </div>
                 }
-              </tbody>
-            </table>
-          </div>
-        </div>
-        
-      </div>
-    }
+              </div>
+            </div>
 
+            <!-- RIGHT: STICKY CART TICKET -->
+            <div class="w-full xl:w-[400px] shrink-0 flex flex-col">
+              <div class="bg-white rounded-[2rem] shadow-xl border border-slate-200 flex flex-col overflow-hidden sticky top-0 h-[calc(100vh-10rem)]">
+                
+                <!-- Cart Header -->
+                <div class="p-6 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                  <h3 class="text-lg font-black text-slate-800 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    Current Ticket
+                  </h3>
+                  <span class="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full">{{ cart.length }} Items</span>
+                </div>
+                
+                <!-- Cart Items -->
+                <div class="flex-1 overflow-y-auto p-4 bg-slate-50/50">
+                  @if (cart.length === 0) {
+                    <div class="h-full flex flex-col items-center justify-center text-slate-400 space-y-4">
+                      <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center opacity-50">
+                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                      </div>
+                      <p class="font-bold tracking-wide">Ticket is empty</p>
+                    </div>
+                  }
+                  
+                  <div class="space-y-3">
+                    @for (item of cart; track item.id; let i = $index) {
+                      <div class="flex items-center justify-between p-4 bg-white rounded-2xl border border-slate-100 shadow-sm group hover:border-blue-200 transition-colors">
+                        <div class="flex-1">
+                          <p class="font-bold text-slate-800 text-sm mb-1">{{ item.name }}</p>
+                          <p class="text-xs font-bold text-slate-400">₹{{ item.pricePerKg }} / kg</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                          <div class="relative">
+                            <input type="number" [(ngModel)]="item.quantity" step="0.1" min="0.1" class="w-16 p-2 text-center font-black text-sm border-2 border-slate-100 rounded-xl focus:border-blue-500 focus:outline-none bg-slate-50 transition-colors">
+                          </div>
+                          <div class="text-right w-16">
+                            <p class="font-black text-slate-800">₹{{ (item.pricePerKg * item.quantity) | number:'1.0-0' }}</p>
+                          </div>
+                          <button (click)="removeItem(i)" class="text-slate-300 hover:text-red-500 transition-colors p-1">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                          </button>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+
+                <!-- Dark Checkout Block -->
+                @if (cart.length > 0) {
+                  <div class="p-6 bg-slate-900 text-white shrink-0">
+                    <div class="space-y-3 mb-6">
+                      <input type="text" [(ngModel)]="customerName" placeholder="Customer Name" class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl focus:border-blue-500 focus:outline-none text-white placeholder-slate-400 font-bold text-sm transition-colors">
+                      <input type="tel" [(ngModel)]="customerPhone" placeholder="Phone Number" class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl focus:border-blue-500 focus:outline-none text-white placeholder-slate-400 font-bold text-sm transition-colors">
+                    </div>
+
+                    <!-- Quick Tender Cash Buttons -->
+                    <div class="mb-6">
+                      <p class="text-slate-400 font-bold uppercase tracking-wider text-[10px] mb-3">Quick Tender</p>
+                      <div class="grid grid-cols-4 gap-2">
+                        <button (click)="setTender(500)" class="bg-slate-800 hover:bg-slate-700 text-white py-2 rounded-lg text-sm font-bold transition-colors">₹500</button>
+                        <button (click)="setTender(1000)" class="bg-slate-800 hover:bg-slate-700 text-white py-2 rounded-lg text-sm font-bold transition-colors">₹1000</button>
+                        <button (click)="setTender(2000)" class="bg-slate-800 hover:bg-slate-700 text-white py-2 rounded-lg text-sm font-bold transition-colors">₹2000</button>
+                        <button (click)="setTender(0)" class="bg-slate-800 hover:bg-blue-600 text-blue-400 hover:text-white py-2 rounded-lg text-sm font-bold transition-colors">Exact</button>
+                      </div>
+                    </div>
+
+                    <div class="flex justify-between items-end mb-2">
+                      <span class="text-slate-400 font-bold uppercase tracking-wider text-xs">Total Due</span>
+                      <h2 class="text-4xl font-black text-emerald-400">₹{{ cartTotal | number:'1.0-0' }}</h2>
+                    </div>
+
+                    <!-- Change Due Display -->
+                    @if (amountTendered !== null) {
+                      <div class="flex justify-between items-center mb-6 py-3 border-t border-slate-700">
+                        <span class="text-slate-400 font-bold uppercase tracking-wider text-xs">Change Due</span>
+                        <h3 class="text-xl font-black" [class.text-red-400]="changeDue < 0" [class.text-white]="changeDue >= 0">
+                          ₹{{ changeDue | number:'1.0-0' }}
+                        </h3>
+                      </div>
+                    } @else {
+                      <div class="mb-6 h-12"></div>
+                    }
+
+                    <button (click)="processOrder()" [disabled]="!customerPhone || (amountTendered !== null && changeDue < 0)" class="w-full flex justify-center items-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 disabled:text-slate-500 text-white py-4 rounded-xl text-lg font-black shadow-lg shadow-blue-600/30 transition-all">
+                      Process Order
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </button>
+                  </div>
+                }
+              </div>
+            </div>
+            
+          </div>
+        }
+
+        <!-- TAB 2: DASHBOARD -->
+        @if (activeTab === 'dashboard') {
+          <div class="space-y-6">
+            
+            <!-- Analytics Bento Box -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div class="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm flex items-center justify-between hover:shadow-md transition-shadow">
+                <div>
+                  <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Today's Revenue</p>
+                  <h3 class="text-3xl font-black text-emerald-500">₹{{ todayRevenue | number:'1.0-0' }}</h3>
+                </div>
+                <div class="w-14 h-14 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-500 text-2xl">💰</div>
+              </div>
+              <div class="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm flex items-center justify-between hover:shadow-md transition-shadow">
+                <div>
+                  <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Pending Orders</p>
+                  <h3 class="text-3xl font-black text-amber-500">{{ pendingOrders }}</h3>
+                </div>
+                <div class="w-14 h-14 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-500 text-2xl">⏳</div>
+              </div>
+              <div class="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm flex items-center justify-between hover:shadow-md transition-shadow">
+                <div>
+                  <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Completed</p>
+                  <h3 class="text-3xl font-black text-blue-500">{{ completedOrders }}</h3>
+                </div>
+                <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-500 text-2xl">✅</div>
+              </div>
+            </div>
+
+            <!-- Chart Area -->
+            <div class="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm">
+              <h3 class="text-sm font-black text-slate-800 mb-6 uppercase tracking-wider">7-Day Revenue Trend</h3>
+              <div class="h-64 relative w-full">
+                <canvas id="revenueChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Recent Orders Table -->
+            <div class="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden mt-6">
+              <div class="px-8 py-6 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                <h2 class="text-lg font-black text-slate-800">Recent Orders</h2>
+                <button (click)="switchTab('dashboard')" class="text-sm font-bold text-blue-600 hover:text-blue-700">Refresh Data</button>
+              </div>
+              <div class="overflow-x-auto p-4">
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr class="text-slate-400 text-xs uppercase tracking-widest border-b border-slate-100">
+                      <th class="px-6 py-4 font-bold">Date</th>
+                      <th class="px-6 py-4 font-bold">Customer</th>
+                      <th class="px-6 py-4 font-bold">Phone</th>
+                      <th class="px-6 py-4 font-bold">Status</th>
+                      <th class="px-6 py-4 font-bold text-center">Action</th>
+                      <th class="px-6 py-4 font-bold text-right">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-50 text-sm">
+                    @if (orderHistory.length === 0) {
+                      <tr><td colspan="6" class="px-6 py-16 text-center text-slate-400 font-bold">No orders found.</td></tr>
+                    }
+                    @for (order of orderHistory; track order.id) {
+                      <tr class="hover:bg-slate-50 transition-colors duration-150 group">
+                        <td class="px-6 py-5 text-slate-500 font-medium">{{ order.orderDate | date:'short' }}</td>
+                        <td class="px-6 py-5 font-black text-slate-800">{{ order.customerName }}</td>
+                        <td class="px-6 py-5 text-slate-500 font-medium">{{ order.customerPhone }}</td>
+                        <td class="px-6 py-5">
+                          <select 
+                            [value]="order.status || 'Received'" 
+                            (change)="updateStatus(order, $event)"
+                            [ngClass]="{
+                              'text-emerald-700 bg-emerald-50 border-emerald-200': order.status === 'Completed',
+                              'text-blue-700 bg-blue-50 border-blue-200': order.status === 'Ready',
+                              'text-amber-700 bg-amber-50 border-amber-200': order.status === 'Processing',
+                              'text-slate-700 bg-slate-100 border-slate-200': order.status === 'Received' || !order.status
+                            }"
+                            class="pl-4 pr-10 py-2 border rounded-xl text-xs font-black uppercase tracking-wider focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none cursor-pointer transition-colors">
+                            <option value="Received">Received</option>
+                            <option value="Processing">Processing</option>
+                            <option value="Ready">Ready for Pickup</option>
+                            <option value="Completed">Completed</option>
+                          </select>
+                        </td>
+                        <td class="px-6 py-5 text-center whitespace-nowrap">
+                          <button (click)="printReceipt(order)" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-xl text-xs font-bold mr-2 transition-colors shadow-sm">
+                            Print
+                          </button>
+                          @if (order.status === 'Ready') {
+                            <a [href]="'https://wa.me/91' + order.customerPhone + '?text=Hello ' + order.customerName + ', your laundry order is ready for pickup! Total due: ₹' + order.totalAmount" target="_blank" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-xl text-xs font-bold inline-block transition-colors shadow-sm decoration-transparent">
+                              Notify
+                            </a>
+                          }
+                        </td>
+                        <td class="px-6 py-5 font-black text-slate-800 text-right text-base">₹{{ order.totalAmount | number:'1.2-2' }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- TAB 3: SETTINGS (Updated wrapper) -->
+        @if (activeTab === 'settings') {
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="bg-white border border-slate-200 p-8 rounded-[2rem] shadow-sm h-fit">
+              <h3 class="text-lg font-black text-slate-800 mb-6">Add New Service</h3>
+              <div class="space-y-5">
+                <div>
+                  <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Service Name</label>
+                  <input type="text" [(ngModel)]="newServiceName" placeholder="e.g., Starching" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none font-bold text-slate-800 transition-all">
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Price per Kg (₹)</label>
+                  <input type="number" [(ngModel)]="newServicePrice" placeholder="0.00" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none font-bold text-slate-800 transition-all">
+                </div>
+                <button (click)="addService()" [disabled]="!newServiceName || !newServicePrice" class="w-full bg-slate-900 text-white py-4 rounded-xl font-black shadow-lg hover:bg-slate-800 disabled:opacity-50 transition-all mt-4">
+                  Add Service
+                </button>
+              </div>
+            </div>
+
+            <div class="lg:col-span-2 bg-white shadow-sm rounded-[2rem] overflow-hidden border border-slate-200">
+              <div class="px-8 py-6 border-b border-slate-100 bg-slate-50">
+                <h3 class="text-lg font-black text-slate-800">Manage Catalog</h3>
+              </div>
+              <div class="p-4">
+                <table class="w-full text-left border-collapse">
+                  <tbody class="divide-y divide-slate-100 text-sm">
+                    @for (service of services; track service.id) {
+                      <tr class="hover:bg-slate-50 transition-colors duration-150">
+                        <td class="px-6 py-4">
+                          <input type="text" [(ngModel)]="service.name" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:border-blue-500 focus:outline-none bg-white font-bold text-slate-800">
+                        </td>
+                        <td class="px-6 py-4">
+                          <div class="relative">
+                            <span class="absolute left-4 top-2.5 text-slate-400 font-black">₹</span>
+                            <input type="number" [(ngModel)]="service.pricePerKg" class="w-28 pl-8 pr-4 py-2 border border-slate-200 rounded-lg focus:border-blue-500 focus:outline-none bg-white font-black text-slate-800">
+                          </div>
+                        </td>
+                        <td class="px-6 py-4 text-right whitespace-nowrap">
+                          <button (click)="updateService(service)" class="text-blue-600 hover:text-blue-700 bg-blue-50 px-4 py-2 rounded-lg font-bold mr-2 transition-colors">Update</button>
+                          <button (click)="deleteService(service.id)" class="text-red-600 hover:text-red-700 bg-red-50 px-4 py-2 rounded-lg font-bold transition-colors">Delete</button>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        }
+
+      </div>
+    </main>
   </div>
 } @else {
-  <!-- THE SECURE LOCK SCREEN -->
-  <div class="min-h-screen bg-gray-50 flex flex-col justify-center items-center font-sans">
-    <div class="bg-white p-10 rounded-3xl shadow-lg border border-gray-100 max-w-md w-full text-center">
-      <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-        <span class="text-4xl">🔐</span>
+  <!-- SAAS LOCK SCREEN -->
+  <div class="min-h-screen bg-slate-900 flex flex-col justify-center items-center font-sans relative overflow-hidden">
+    <!-- Decorative background glow -->
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-600 rounded-full blur-[128px] opacity-20 pointer-events-none"></div>
+    
+    <div class="bg-slate-800/50 backdrop-blur-xl p-12 rounded-[2.5rem] shadow-2xl border border-slate-700/50 max-w-md w-full text-center relative z-10">
+      <div class="w-20 h-20 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-inner">
+        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
       </div>
-      <h1 class="text-3xl font-extrabold text-gray-900 mb-2">Nellore Laundry</h1>
-      <p class="text-gray-500 mb-8 font-medium">Enter your staff PIN to access the POS</p>
+      <h1 class="text-4xl font-black text-white mb-2 tracking-tight">NELLORE</h1>
+      <p class="text-slate-400 mb-10 font-bold tracking-widest uppercase text-xs">Terminal Locked</p>
       
-      <input 
-        type="password" 
-        [(ngModel)]="pinCode" 
-        (keyup.enter)="login()"
-        placeholder="••••" 
-        maxlength="4"
-        class="w-full text-center text-4xl tracking-widest px-4 py-4 mb-6 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 focus:outline-none transition-all">
+      <input type="password" [(ngModel)]="pinCode" (keyup.enter)="login()" placeholder="••••" maxlength="4" class="w-full text-center text-4xl tracking-[1em] px-4 py-5 mb-8 bg-slate-900/50 border-2 border-slate-700 rounded-2xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 focus:outline-none transition-all text-white font-mono shadow-inner">
       
-      <button 
-        (click)="login()"
-        [disabled]="pinCode.length < 4"
-        class="w-full bg-blue-600 text-white py-4 rounded-xl text-lg font-bold shadow-md hover:bg-blue-700 disabled:opacity-50 transition-colors">
+      <button (click)="login()" [disabled]="pinCode.length < 4" class="w-full bg-blue-600 text-white py-5 rounded-2xl text-lg font-black shadow-lg shadow-blue-600/30 hover:bg-blue-500 disabled:opacity-50 disabled:shadow-none transition-all tracking-wide">
         Unlock System
       </button>
     </div>
   </div>
 }
-<div class="fixed bottom-6 right-6 z-50 flex flex-col gap-3">
+
+<!-- TOAST NOTIFICATIONS -->
+<div class="fixed bottom-8 right-8 z-50 flex flex-col gap-4 pointer-events-none">
   @for (toast of toasts; track toast) {
-    <div 
-      [class]="toast.type === 'success' ? 'bg-green-600 border-green-700' : 'bg-red-600 border-red-700'" 
-      class="text-white px-6 py-4 rounded-xl shadow-2xl font-bold border-b-4 flex items-center gap-3 transition-all duration-300 transform translate-y-0 opacity-100">
-      <span>{{ toast.type === 'success' ? '✅' : '⚠️' }}</span>
+    <div [class]="toast.type === 'success' ? 'bg-slate-900 border-emerald-500 text-white' : 'bg-red-600 border-red-400 text-white'" class="px-6 py-4 rounded-2xl shadow-2xl font-bold border-l-4 flex items-center gap-4 transition-all duration-300 transform translate-y-0 opacity-100 pointer-events-auto min-w-[300px]">
+      <span class="text-xl">{{ toast.type === 'success' ? '✨' : '⚠️' }}</span>
       {{ toast.message }}
     </div>
   }

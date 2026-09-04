@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { environment } from '../environments/environment';
+import Chart from 'chart.js/auto';
 
 export interface LaundryService { id: number; name: string; pricePerKg: number; }
 export interface CartItem extends LaundryService { quantity: number; }
@@ -32,11 +33,26 @@ export class AppComponent implements OnInit {
   newServicePrice: number | null = null;
   toasts: { message: string, type: 'success' | 'error' }[] = [];
 
+  chartInstance: any;
+  todayRevenue = 0;
+  pendingOrders = 0;
+  completedOrders = 0;
+
+  amountTendered: number | null = null;
+
   ngOnInit() {
     if (localStorage.getItem('jwt_token')) {
       this.isAuthenticated = true;
       this.loadServices();
     }
+  }
+
+  get changeDue() {
+    return this.amountTendered !== null ? this.amountTendered - this.cartTotal : 0;
+  }
+
+  setTender(amount: number) {
+    this.amountTendered = amount === 0 ? this.cartTotal : amount;
   }
 
   showToast(message: string, type: 'success' | 'error' = 'success') {
@@ -78,9 +94,68 @@ export class AppComponent implements OnInit {
   switchTab(tab: string) {
     this.activeTab = tab;
     if (tab === 'dashboard') {
-      // Replaced <any[]> with <Order[]>
-      this.http.get<Order[]>(`${this.apiUrl}/orders`).subscribe(data => this.orderHistory = data);
+      this.http.get<Order[]>(`${this.apiUrl}/orders`).subscribe(data => {
+        this.orderHistory = data;
+        this.calculateAnalytics();
+      });
     }
+  }
+
+  calculateAnalytics() {
+    const today = new Date().toDateString();
+    this.todayRevenue = this.orderHistory
+      .filter(o => new Date(o.orderDate).toDateString() === today)
+      .reduce((sum, o) => sum + o.totalAmount, 0);
+
+    this.pendingOrders = this.orderHistory.filter(o => o.status !== 'Completed').length;
+    this.completedOrders = this.orderHistory.filter(o => o.status === 'Completed').length;
+
+    // Wait 1 tick for Angular to render the canvas element before drawing the chart
+    setTimeout(() => this.renderChart(), 0); 
+  }
+
+  renderChart() {
+    const ctx = document.getElementById('revenueChart') as HTMLCanvasElement;
+    if (!ctx) return;
+    if (this.chartInstance) this.chartInstance.destroy();
+
+    // Group revenue by date (process in chronological order)
+    const revByDate: { [key: string]: number } = {};
+    [...this.orderHistory].reverse().forEach(o => {
+      const date = new Date(o.orderDate).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' });
+      revByDate[date] = (revByDate[date] || 0) + o.totalAmount;
+    });
+
+    const labels = Object.keys(revByDate).slice(-7); // Last 7 days
+    const data = Object.values(revByDate).slice(-7);
+
+    this.chartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Revenue (₹)',
+          data: data,
+          borderColor: '#3b82f6', 
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          tension: 0.4, // Creates the smooth curve
+          fill: true,
+          pointBackgroundColor: '#3b82f6',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointRadius: 5
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, border: { dash: [4, 4] }, grid: { color: '#f1f5f9' } },
+          x: { border: { display: false }, grid: { display: false } }
+        }
+      }
+    });
   }
 
   addToCart(service: LaundryService) {
@@ -113,8 +188,18 @@ export class AppComponent implements OnInit {
   updateStatus(order: Order, newEvent: Event) {
     const newStatus = (newEvent.target as HTMLSelectElement).value;
     this.http.put(`${this.apiUrl}/orders/${order.id}/status`, { status: newStatus }).subscribe({
-      next: () => { order.status = newStatus; this.showToast('Status updated'); },
-      error: () => { this.showToast('Update failed', 'error'); (newEvent.target as HTMLSelectElement).value = order.status; }
+      next: () => { 
+        order.status = newStatus; 
+        
+        // NEW: Force the dashboard cards to recount immediately
+        this.calculateAnalytics(); 
+        
+        this.showToast('Status updated'); 
+      },
+      error: () => { 
+        this.showToast('Update failed', 'error'); 
+        (newEvent.target as HTMLSelectElement).value = order.status; 
+      }
     });
   }
 

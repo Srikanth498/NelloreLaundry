@@ -70,14 +70,27 @@ app.MapPost("/api/auth/login", (LoginRequest req, IConfiguration config) =>
     return Results.Ok(new { token = tokenHandler.WriteToken(token) });
 });
 
-// 4. SECURED BUSINESS ENDPOINTS (Notice .RequireAuthorization())
+// --- SERVICES ENDPOINTS ---
 app.MapGet("/api/services", async (AppDbContext db) => await db.Services.ToListAsync()).RequireAuthorization();
 app.MapPost("/api/services", async (LaundryService newService, AppDbContext db) => { db.Services.Add(newService); await db.SaveChangesAsync(); return Results.Ok(newService); }).RequireAuthorization();
 app.MapPut("/api/services/{id}", async (int id, LaundryService updatedService, AppDbContext db) => { var s = await db.Services.FindAsync(id); if (s == null) return Results.NotFound(); s.Name = updatedService.Name; s.PricePerKg = updatedService.PricePerKg; await db.SaveChangesAsync(); return Results.Ok(s); }).RequireAuthorization();
 app.MapDelete("/api/services/{id}", async (int id, AppDbContext db) => { var s = await db.Services.FindAsync(id); if (s == null) return Results.NotFound(); db.Services.Remove(s); await db.SaveChangesAsync(); return Results.Ok(); }).RequireAuthorization();
 
+// --- ORDERS ENDPOINTS ---
 app.MapGet("/api/orders", async (AppDbContext db) => await db.Orders.Include(o => o.Items).OrderByDescending(o => o.OrderDate).ToListAsync()).RequireAuthorization();
-app.MapPut("/api/orders/{id}/status", async (int id, StatusUpdate req, AppDbContext db) => { var order = await db.Orders.FindAsync(id); if (order == null) return Results.NotFound(); order.Status = req.Status; await db.SaveChangesAsync(); return Results.Ok(); }).RequireAuthorization();
+
+app.MapPut("/api/orders/{id}/status", async (int id, StatusUpdate req, AppDbContext db) => 
+{ 
+    var validStatuses = new[] { "Received", "Processing", "Ready", "Completed" };
+    if (!validStatuses.Contains(req.Status)) return Results.BadRequest(new { message = "Invalid status." });
+
+    var order = await db.Orders.FindAsync(id); 
+    if (order == null) return Results.NotFound(); 
+    
+    order.Status = req.Status; 
+    await db.SaveChangesAsync(); 
+    return Results.Ok(); 
+}).RequireAuthorization();
 
 // ZERO-TRUST ORDER CREATION
 app.MapPost("/api/orders", async (OrderRequest incomingOrder, AppDbContext db) =>
@@ -89,7 +102,13 @@ app.MapPost("/api/orders", async (OrderRequest incomingOrder, AppDbContext db) =
     var newOrder = new Order { CustomerName = incomingOrder.CustomerName, CustomerPhone = incomingOrder.CustomerPhone, TotalAmount = 0 };
     foreach (var itemReq in incomingOrder.Items)
     {
-        if (!officialServices.TryGetValue(itemReq.ServiceId, out var svc)) return Results.BadRequest(new { message = "Invalid Service ID" });
+        // NEW: Block negative or zero quantities
+        if (itemReq.Quantity <= 0) 
+            return Results.BadRequest(new { message = "Quantity must be greater than zero." });
+
+        if (!officialServices.TryGetValue(itemReq.ServiceId, out var svc)) 
+            return Results.BadRequest(new { message = "Invalid Service ID" });
+            
         newOrder.Items.Add(new OrderItem { Name = svc.Name, PricePerKg = svc.PricePerKg, Quantity = itemReq.Quantity });
         newOrder.TotalAmount += (svc.PricePerKg * itemReq.Quantity);
     }

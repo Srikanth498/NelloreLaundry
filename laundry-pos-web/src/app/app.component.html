@@ -117,12 +117,14 @@
             <th style="padding: 12px; border-bottom: 2px solid #ddd;">Customer</th>
             <th style="padding: 12px; border-bottom: 2px solid #ddd;">Phone</th>
             <th style="padding: 12px; border-bottom: 2px solid #ddd;">Items</th>
+            <th style="padding: 12px; border-bottom: 2px solid #ddd;">Status</th>
+            <th style="padding: 12px; border-bottom: 2px solid #ddd; text-align: center;">Action</th>
             <th style="padding: 12px; border-bottom: 2px solid #ddd; text-align: right;">Total Amount</th>
           </tr>
         </thead>
         <tbody>
           @if (orderHistory.length === 0) {
-            <tr><td colspan="5" style="padding: 20px; text-align: center; color: #777;">No orders found.</td></tr>
+            <tr><td colspan="6" style="padding: 20px; text-align: center; color: #777;">No orders found.</td></tr>
           }
           @for (order of orderHistory; track order.id) {
             <tr style="border-bottom: 1px solid #eee;">
@@ -136,6 +138,38 @@
                   }
                 </ul>
               </td>
+              <td style="padding: 12px;">
+                <!-- Status Dropdown -->
+                <select 
+                  [value]="order.status || 'Received'" 
+                  (change)="updateStatus(order, $event)"
+                  style="padding: 8px; border-radius: 5px; border: 1px solid #ccc; font-size: 14px; font-weight: bold;"
+                  [style.color]="order.status === 'Completed' ? '#28a745' : order.status === 'Ready' ? '#007bff' : '#ffc107'">
+                  <option value="Received">Received</option>
+                  <option value="Processing">Processing</option>
+                  <option value="Ready">Ready for Pickup</option>
+                  <option value="Completed">Completed</option>
+                </select>
+              </td>
+
+              <!-- Action Column -->
+              <td style="padding: 12px; text-align: center;">
+                <button 
+                  (click)="printReceipt(order)"
+                  style="background-color: #6c757d; color: white; border: none; padding: 8px 12px; border-radius: 5px; font-weight: bold; cursor: pointer; margin-right: 5px;">
+                  🖨️ Print
+                </button>
+
+                @if (order.status === 'Ready') {
+                  <a 
+                    [href]="'https://wa.me/91' + order.customerPhone + '?text=Hello ' + order.customerName + ', your laundry order is ready for pickup! Total due: ₹' + order.totalAmount" 
+                    target="_blank"
+                    style="background-color: #25D366; color: white; padding: 8px 12px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px; display: inline-block;">
+                    💬 Notify
+                  </a>
+                }
+              </td>
+
               <td style="padding: 12px; font-weight: bold; color: #28a745; text-align: right;">₹{{ order.totalAmount | number:'1.2-2' }}</td>
             </tr>
           }

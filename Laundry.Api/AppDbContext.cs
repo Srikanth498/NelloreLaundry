@@ -20,6 +20,9 @@ public class Order
     public decimal TotalAmount { get; set; }
     public DateTime OrderDate { get; set; } = DateTime.Now;
     
+    // Tracks where the clothes are in the laundry process
+    public string Status { get; set; } = "Received";
+    
     // Links to the specific clothes in this order
     public List<OrderItem> Items { get; set; } = new();
 }

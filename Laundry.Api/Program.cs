@@ -71,8 +71,21 @@ app.MapPost("/api/orders", async (OrderRequest incomingOrder, AppDbContext db) =
     return new { message = "Order successfully saved to SQL Server!" };
 });
 
+// --- UPDATE ORDER STATUS ---
+app.MapPut("/api/orders/{id}/status", async (int id, StatusUpdate req, AppDbContext db) =>
+{
+    var order = await db.Orders.FindAsync(id);
+    if (order == null) return Results.NotFound();
+    
+    order.Status = req.Status;
+    await db.SaveChangesAsync();
+    
+    return Results.Ok(new { message = $"Order {id} status updated to {req.Status}" });
+});
+
 app.Run();
 
 // --- DATA SHAPES ---
 public record OrderItemDto(int Id, string Name, decimal PricePerKg, decimal Quantity);
 public record OrderRequest(string CustomerName, string CustomerPhone, decimal TotalAmount, OrderItemDto[] Items);
+public record StatusUpdate(string Status);

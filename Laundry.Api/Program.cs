@@ -13,7 +13,6 @@ builder.Services.AddCors(options =>
     });
 });
 
-// 1. Tell C# to use SQL Server
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
     ?? "Server=sqlserver;Database=LaundryDb;User Id=sa;Password=NelloreLaundry@123;TrustServerCertificate=True;";
 
@@ -22,7 +21,6 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 var app = builder.Build();
 
-// 2. Automatically create the SQL Server database and tables on startup
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -32,6 +30,7 @@ using (var scope = app.Services.CreateScope())
 app.UseCors("AllowPOS");
 app.UseHttpsRedirection();
 
+// --- POS MENU ---
 app.MapGet("/api/services", () =>
 {
     return new object[]
@@ -42,7 +41,14 @@ app.MapGet("/api/services", () =>
     };
 });
 
-// 3. Catch the order and save it to SQL Server
+// --- NEW: FETCH ORDER HISTORY ---
+app.MapGet("/api/orders", async (AppDbContext db) =>
+{
+    // Retrieves all orders, includes their specific laundry items, and sorts by newest first
+    return await db.Orders.Include(o => o.Items).OrderByDescending(o => o.OrderDate).ToListAsync();
+});
+
+// --- SUBMIT NEW ORDER ---
 app.MapPost("/api/orders", async (OrderRequest incomingOrder, AppDbContext db) =>
 {
     var newOrder = new Order 

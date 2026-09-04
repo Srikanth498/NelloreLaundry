@@ -11,9 +11,13 @@ import { CommonModule } from '@angular/common';
 })
 export class AppComponent {
   http = inject(HttpClient);
+  
+  // NEW: Tab Navigation State
+  activeTab = 'pos'; 
+  orderHistory: any[] = [];
+
   services: any[] = [];
   cart: any[] = [];
-  
   customerPhone: string = '';
   customerName: string = '';
 
@@ -21,6 +25,16 @@ export class AppComponent {
     this.http.get<any[]>('http://localhost:5168/api/services').subscribe(data => {
       this.services = data;
     });
+  }
+
+  // NEW: Switch tabs and fetch data if opening dashboard
+  switchTab(tab: string) {
+    this.activeTab = tab;
+    if (tab === 'dashboard') {
+      this.http.get<any[]>('http://localhost:5168/api/orders').subscribe(data => {
+        this.orderHistory = data;
+      });
+    }
   }
 
   addToCart(service: any) {
@@ -40,7 +54,6 @@ export class AppComponent {
     return this.cart.reduce((total, item) => total + (item.pricePerKg * item.quantity), 0);
   }
 
-  // --- NEW: SEND ORDER TO BACKEND ---
   processOrder() {
     const orderPayload = {
       customerName: this.customerName,
@@ -49,11 +62,9 @@ export class AppComponent {
       items: this.cart
     };
 
-    // Fire the POST request to C#
     this.http.post('http://localhost:5168/api/orders', orderPayload).subscribe({
       next: (response: any) => {
-        alert(response.message); // Show success popup
-        // Clear the cart for the next customer
+        alert(response.message);
         this.cart = [];
         this.customerName = '';
         this.customerPhone = '';

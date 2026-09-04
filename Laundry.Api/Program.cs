@@ -106,9 +106,17 @@ app.MapPut("/api/orders/{id}/status", async (int id, StatusUpdate req, AppDbCont
     return Results.Ok();
 });
 
+// --- AUTHENTICATION ---
+app.MapPost("/api/auth/login", (LoginRequest req) =>
+{
+    if (req.Pin == "1234") return Results.Ok(new { message = "Authorized" });
+    return Results.Unauthorized();
+});
+
 app.Run();
 
 // --- DATA SHAPES ---
 public record StatusUpdate(string Status);
 public record OrderItemDto(int Id, string Name, decimal PricePerKg, decimal Quantity);
 public record OrderRequest(string CustomerName, string CustomerPhone, decimal TotalAmount, OrderItemDto[] Items);
+public record LoginRequest(string Pin);

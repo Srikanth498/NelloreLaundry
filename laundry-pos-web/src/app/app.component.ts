@@ -25,6 +25,10 @@ export class AppComponent implements OnInit {
   newServiceName: string = '';
   newServicePrice: number | null = null;
 
+  //login
+  isAuthenticated = false;
+  pinCode = '';
+
   ngOnInit() {
     this.loadServices();
   }
@@ -143,5 +147,23 @@ export class AppComponent implements OnInit {
         this.loadServices();
       });
     }
+  }
+
+  login() {
+    this.http.post('http://localhost:5168/api/auth/login', { pin: this.pinCode }).subscribe({
+      next: () => {
+        this.isAuthenticated = true;
+        this.pinCode = ''; // Clear PIN for security
+      },
+      error: () => {
+        alert('Invalid PIN Code');
+        this.pinCode = '';
+      }
+    });
+  }
+
+  logout() {
+    this.isAuthenticated = false;
+    this.activeTab = 'pos';
   }
 }

@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  # 1. NEW: The dedicated MS SQL Server Container
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=NelloreLaundry@123 # SQL Server requires a strong password
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql # Persists data across restarts
+
+  backend-api:
+    build: 
+      context: ./Laundry.Api
+    ports:
+      - "5168:8080" 
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      # Overrides the fallback string in Program.cs to point to the sqlserver container
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=LaundryDb;User Id=sa;Password=NelloreLaundry@123;TrustServerCertificate=True;
+    depends_on:
+      - sqlserver
+
+  frontend-web:
+    build:
+      context: ./laundry-pos-web
+    ports:
+      - "4200:80" 
+    depends_on:
+      - backend-api
+
+# 2. NEW: Define the managed volume for SQL Server data
+volumes:
+  sqlserver-data:
